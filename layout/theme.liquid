@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="{{ settings.color_header_background }}">
+
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 48, height: 48 }}">
+    {%- endif -%}
+
+    {% render 'meta-tags' %}
+
+    {%- comment -%}
+      Fonts. The font_face filter returns bare CSS (@font-face rules), not a <style> element, so it must be
+      wrapped in {% style %}. Outside a style tag the browser prints the CSS as visible text on the page.
+      Each distinct font is declared once: when heading and body fonts are identical only one rule is output.
+    {%- endcomment -%}
+    {%- liquid
+      assign same_font = false
+      if settings.type_body_font.family == settings.type_heading_font.family
+        if settings.type_body_font.weight == settings.type_heading_font.weight
+          if settings.type_body_font.style == settings.type_heading_font.style
+            assign same_font = true
+          endif
+        endif
+      endif
+    -%}
+    {% style %}
+      {{ settings.type_heading_font | font_face: font_display: 'swap' }}
+      {%- unless same_font -%}
+        {{ settings.type_body_font | font_face: font_display: 'swap' }}
+      {%- endunless -%}
+    {% endstyle %}
+
+
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+    {{ 'components.css' | asset_url | stylesheet_tag }}
+    {{ 'header.css' | asset_url | stylesheet_tag }}
+    {{ 'mega-menu.css' | asset_url | stylesheet_tag }}
+    {{ 'drawers.css' | asset_url | stylesheet_tag }}
+    {{ 'responsive.css' | asset_url | stylesheet_tag }}
+
+    {%- comment -%}
+      Theme settings go AFTER the stylesheets so they override the fallback values declared in base.css.
+    {%- endcomment -%}
+    {% style %}
+      :root {
+        --color-bg: {{ settings.color_background }};
+        --color-surface: {{ settings.color_surface }};
+        --color-text: {{ settings.color_text }};
+        --color-muted: {{ settings.color_text_muted }};
+        --color-border: {{ settings.color_border }};
+        --color-accent: {{ settings.color_accent }};
+        --color-accent-text: {{ settings.color_accent_text }};
+
+        /* Semantic aliases (same values as the tokens above, no second color system) */
+        --color-background: var(--color-bg);
+        --color-foreground: var(--color-text);
+        --color-header-background: {{ settings.color_header_background }};
+        --color-announcement-background: {{ settings.color_announcement_background }};
+        --color-announcement-text: {{ settings.color_announcement_text }};
+
+        --font-heading: {{ settings.type_heading_font.family }}, {{ settings.type_heading_font.fallback_families }};
+        --font-heading-weight: {{ settings.type_heading_font.weight }};
+        --font-body: {{ settings.type_body_font.family }}, {{ settings.type_body_font.fallback_families }};
+        --font-body-weight: {{ settings.type_body_font.weight }};
+        --font-size-base: {{ settings.type_base_size }}px;
+        --heading-scale: {{ settings.type_heading_scale | divided_by: 100.0 }};
+
+        --page-width: {{ settings.page_width }}px;
+        --section-space-max: {{ settings.section_spacing }}px;
+        --radius: {{ settings.corner_radius }}px;
+      }
+    {% endstyle %}
+
+    {{ content_for_header }}
+
+    {%- comment -%} Order matters: theme.js defines the shared drawer manager used by the others. {%- endcomment -%}
+    <script src="{{ 'theme.js' | asset_url }}" defer></script>
+    <script src="{{ 'header.js' | asset_url }}" defer></script>
+    <script src="{{ 'search-drawer.js' | asset_url }}" defer></script>
+    <script src="{{ 'cart-drawer.js' | asset_url }}" defer></script>
+  </head>
+
+  <body class="template-{{ request.page_type | handleize }}">
+    <a class="skip-link" href="#MainContent">{{ 'accessibility.skip_to_content' | t }}</a>
+
+    {% sections 'header-group' %}
+
+    <main id="MainContent" class="main" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {% render 'search-drawer' %}
+    {% section 'cart-drawer' %}
+  </body>
+</html>

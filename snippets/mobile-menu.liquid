@@ -1,0 +1,324 @@
+{%- comment -%}
+  Full-screen mobile navigation. Rendered by sections/header.liquid.
+  Panels are flat siblings that slide horizontally (styles in header.css, behaviour in header.js):
+    root panel -> second-level panel (children, or mega menu columns + promo) -> third-level panel
+  Everything is dynamic: menu links come from the header menu, promos from mega menu blocks and the
+  "Mobile menu" settings of the header section.
+  Accepts:
+  - section: the header section
+  Usage: {% render 'mobile-menu', section: section %}
+{%- endcomment -%}
+{%- liquid
+  assign menu = section.settings.menu
+  assign logo = section.settings.logo
+  assign secondary = section.settings.mobile_secondary_menu
+  assign view_all_label = 'general.view_all' | t
+
+  assign banner_on = false
+  if section.settings.mobile_banner_image != blank or section.settings.mobile_banner_heading != blank
+    assign banner_on = true
+  endif
+  assign banner_alt = section.settings.mobile_banner_image.alt | default: section.settings.mobile_banner_heading | escape
+  assign banner_overlay = section.settings.mobile_banner_overlay | divided_by: 100.0
+-%}
+
+<div
+  class="drawer drawer--full mobile-menu"
+  id="MobileMenuDrawer"
+  data-drawer="menu"
+  data-mobile-menu
+  data-path="MobilePanel-root"
+  role="dialog"
+  aria-modal="true"
+  aria-label="{{ 'general.menu' | t }}"
+  aria-hidden="true"
+>
+  <div class="drawer__panel">
+    <div class="mobile-menu__bar">
+      <a class="mobile-menu__logo" href="{{ routes.root_url }}">
+        {%- if logo != blank -%}
+          {{ logo | image_url: width: 400 | image_tag: loading: 'lazy', width: section.settings.logo_width, alt: shop.name }}
+        {%- else -%}
+          <span class="header__logo-text">{{ shop.name | escape }}</span>
+        {%- endif -%}
+      </a>
+      <button class="icon-button mobile-menu__close" type="button" data-drawer-close data-drawer-focus aria-label="{{ 'general.close_menu' | t }}">
+        {% render 'icon', name: 'close' %}
+      </button>
+    </div>
+
+    <div class="mobile-panels">
+      {%- comment -%} Level 1: numbered editorial list, campaign banner, utility row {%- endcomment -%}
+      <div class="mobile-panel mobile-panel--root is-active" id="MobilePanel-root" data-mobile-panel>
+        {%- if menu != blank and menu.links.size > 0 -%}
+          <nav aria-label="{{ 'accessibility.mobile_navigation' | t }}">
+            <ul class="mobile-nav__list" role="list">
+              {%- for link in menu.links -%}
+                {%- liquid
+                  assign mega_block = nil
+                  assign link_key = link.title | strip | handleize
+                  for block in section.blocks
+                    assign block_key = block.settings.trigger_label | strip | handleize
+                    if block_key == link_key and block_key != blank
+                      assign mega_block = block
+                      break
+                    endif
+                  endfor
+
+                  assign root_panel_id = ''
+                  if mega_block
+                    assign root_panel_id = 'MobilePanel-' | append: forloop.index
+                  elsif link.links.size > 0
+                    assign root_panel_id = 'MobilePanel-' | append: forloop.index
+                  endif
+
+                  assign link_current = false
+                  if link.active or link.child_active
+                    assign link_current = true
+                  endif
+
+                  assign index_label = forloop.index | prepend: '0' | slice: -2, 2
+                -%}
+                {% render 'mobile-nav-row',
+                  level: 'primary',
+                  title: link.title,
+                  url: link.url,
+                  panel_id: root_panel_id,
+                  i: forloop.index0,
+                  current: link_current,
+                  exact: link.current,
+                  index_label: index_label
+                %}
+              {%- endfor -%}
+            </ul>
+          </nav>
+        {%- endif -%}
+
+        {%- if banner_on -%}
+          <div class="mobile-promo mobile-promo--banner{% if section.settings.mobile_banner_image == blank %} mobile-promo--empty{% endif %}" style="--promo-overlay: {{ banner_overlay }};">
+            {%- if section.settings.mobile_banner_image != blank -%}
+              {{
+                section.settings.mobile_banner_image
+                | image_url: width: 900
+                | image_tag:
+                  loading: 'lazy',
+                  class: 'mobile-promo__image',
+                  widths: '450, 600, 900',
+                  sizes: '(min-width: 750px) 40rem, 100vw',
+                  alt: banner_alt
+              }}
+            {%- endif -%}
+            <div class="mobile-promo__content">
+              {%- if section.settings.mobile_banner_eyebrow != blank -%}
+                <p class="mobile-promo__eyebrow">{{ section.settings.mobile_banner_eyebrow | escape }}</p>
+              {%- endif -%}
+              {%- if section.settings.mobile_banner_heading != blank -%}
+                <p class="mobile-promo__title">{{ section.settings.mobile_banner_heading | escape }}</p>
+              {%- endif -%}
+              {%- if section.settings.mobile_banner_label != blank and section.settings.mobile_banner_url != blank -%}
+                <a class="mobile-promo__cta" href="{{ section.settings.mobile_banner_url }}">
+                  <span>{{ section.settings.mobile_banner_label | escape }}</span>
+                  {% render 'icon', name: 'arrow-right' %}
+                </a>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+        <div class="mobile-utility">
+          {%- if section.settings.show_search -%}
+            <a class="mobile-utility__item" href="{{ routes.search_url }}" data-drawer-open="search" aria-haspopup="dialog" aria-controls="SearchDrawer">
+              {% render 'icon', name: 'search' %}
+              <span>{{ 'general.search' | t }}</span>
+            </a>
+          {%- endif -%}
+          {%- if section.settings.show_account and shop.customer_accounts_enabled -%}
+            <a class="mobile-utility__item" href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}">
+              {% render 'icon', name: 'account' %}
+              <span>{% if customer %}{{ 'general.account' | t }}{% else %}{{ 'general.log_in' | t }}{% endif %}</span>
+            </a>
+          {%- endif -%}
+          {%- if section.settings.show_cart -%}
+            <a class="mobile-utility__item" href="{{ routes.cart_url }}" data-drawer-open="cart" aria-haspopup="dialog" aria-controls="CartDrawer">
+              {% render 'icon', name: 'cart' %}
+              <span>{{ 'general.cart' | t }} <span class="mobile-utility__count" data-cart-count>{{ cart.item_count }}</span></span>
+            </a>
+          {%- endif -%}
+        </div>
+
+        {%- if secondary != blank and secondary.links.size > 0 -%}
+          <ul class="mobile-secondary" role="list">
+            {%- for link in secondary.links -%}
+              <li><a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title | escape }}</a></li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} Level 2 (and level 3) {%- endcomment -%}
+      {%- if menu != blank -%}
+        {%- for link in menu.links -%}
+          {%- liquid
+            assign mega_block = nil
+            assign link_key = link.title | strip | handleize
+            for block in section.blocks
+              assign block_key = block.settings.trigger_label | strip | handleize
+              if block_key == link_key and block_key != blank
+                assign mega_block = block
+                break
+              endif
+            endfor
+            assign link_index = forloop.index
+          -%}
+
+          {%- if mega_block -%}
+            {%- liquid
+              assign ms = mega_block.settings
+              assign has_promo = false
+              if ms.promo_image != blank or ms.promo_heading != blank
+                assign has_promo = true
+              endif
+              assign promo_alt = ms.promo_image.alt | default: ms.promo_heading | escape
+              capture promo_vars
+                render 'mega-promo-vars', s: ms
+              endcapture
+            -%}
+            <div class="mobile-panel" id="MobilePanel-{{ link_index }}" data-mobile-panel role="group" aria-label="{{ link.title | escape }}">
+              {% render 'mobile-panel-head', title: link.title %}
+
+              <ul class="mobile-nav__list" role="list">
+                {% render 'mobile-nav-row', level: 'all', title: view_all_label, url: link.url, i: 0 %}
+              </ul>
+
+              {%- for c in (1..3) -%}
+                {%- liquid
+                  assign heading_key = 'heading_' | append: c
+                  assign menu_key = 'menu_' | append: c
+                  assign col_heading = ms[heading_key]
+                  assign col_menu = ms[menu_key]
+                  assign col_has_links = false
+                  if col_menu != blank
+                    if col_menu.links.size > 0
+                      assign col_has_links = true
+                    endif
+                  endif
+                -%}
+                {%- if col_has_links -%}
+                  {%- if col_heading != blank -%}
+                    <p class="mobile-panel__group">{{ col_heading | escape }}</p>
+                  {%- endif -%}
+                  <ul class="mobile-nav__list" role="list">
+                    {%- for col_link in col_menu.links -%}
+                      {%- liquid
+                        assign sub_panel_id = ''
+                        if col_link.links.size > 0
+                          assign sub_panel_id = 'MobilePanel-' | append: link_index | append: '-' | append: c | append: '-' | append: forloop.index
+                        endif
+                        assign col_current = false
+                        if col_link.current or col_link.active
+                          assign col_current = true
+                        endif
+                        assign stagger = c | times: 4 | plus: forloop.index
+                      -%}
+                      {% render 'mobile-nav-row',
+                        level: 'sub',
+                        title: col_link.title,
+                        url: col_link.url,
+                        panel_id: sub_panel_id,
+                        i: stagger,
+                        current: col_current,
+                        exact: col_link.current
+                      %}
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+              {%- endfor -%}
+
+              {%- if has_promo -%}
+                <div class="mobile-promo{% if ms.promo_image == blank %} mobile-promo--empty{% elsif ms.promo_fit == 'contain' %} mobile-promo--contain{% endif %}" style="{{ promo_vars | strip }}">
+                  {%- if ms.promo_image != blank -%}
+                    {{
+                      ms.promo_image
+                      | image_url: width: 900
+                      | image_tag:
+                        loading: 'lazy',
+                        class: 'mobile-promo__image',
+                        widths: '450, 600, 900',
+                        sizes: '(min-width: 750px) 40rem, 100vw',
+                        alt: promo_alt
+                    }}
+                  {%- endif -%}
+                  <div class="mobile-promo__content">
+                    {%- if ms.promo_heading != blank -%}
+                      <p class="mobile-promo__title">{{ ms.promo_heading | escape }}</p>
+                    {%- endif -%}
+                    {%- if ms.promo_description != blank -%}
+                      <p class="mobile-promo__text">{{ ms.promo_description | escape }}</p>
+                    {%- endif -%}
+                    {%- if ms.promo_cta_label != blank and ms.promo_cta_url != blank -%}
+                      <a class="mobile-promo__cta" href="{{ ms.promo_cta_url }}">
+                        <span>{{ ms.promo_cta_label | escape }}</span>
+                        {% render 'icon', name: 'arrow-right' %}
+                      </a>
+                    {%- endif -%}
+                  </div>
+                </div>
+              {%- endif -%}
+            </div>
+
+            {%- for c in (1..3) -%}
+              {%- liquid
+                assign menu_key = 'menu_' | append: c
+                assign col_menu = ms[menu_key]
+              -%}
+              {%- if col_menu != blank -%}
+                {%- for col_link in col_menu.links -%}
+                  {%- if col_link.links.size > 0 -%}
+                    {%- assign panel_id = 'MobilePanel-' | append: link_index | append: '-' | append: c | append: '-' | append: forloop.index -%}
+                    {% render 'mobile-panel', id: panel_id, link: col_link, eyebrow: link.title %}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+          {%- elsif link.links.size > 0 -%}
+            <div class="mobile-panel" id="MobilePanel-{{ link_index }}" data-mobile-panel role="group" aria-label="{{ link.title | escape }}">
+              {% render 'mobile-panel-head', title: link.title %}
+              <ul class="mobile-nav__list" role="list">
+                {% render 'mobile-nav-row', level: 'all', title: view_all_label, url: link.url, i: 0 %}
+                {%- for child in link.links -%}
+                  {%- liquid
+                    assign sub_panel_id = ''
+                    if child.links.size > 0
+                      assign sub_panel_id = 'MobilePanel-' | append: link_index | append: '-' | append: forloop.index
+                    endif
+                    assign child_current = false
+                    if child.current or child.active
+                      assign child_current = true
+                    endif
+                  -%}
+                  {% render 'mobile-nav-row',
+                    level: 'sub',
+                    title: child.title,
+                    url: child.url,
+                    panel_id: sub_panel_id,
+                    i: forloop.index,
+                    current: child_current,
+                    exact: child.current
+                  %}
+                {%- endfor -%}
+              </ul>
+            </div>
+
+            {%- for child in link.links -%}
+              {%- if child.links.size > 0 -%}
+                {%- assign panel_id = 'MobilePanel-' | append: link_index | append: '-' | append: forloop.index -%}
+                {% render 'mobile-panel', id: panel_id, link: child, eyebrow: link.title %}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+</div>

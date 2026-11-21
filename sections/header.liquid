@@ -1,0 +1,1003 @@
+{%- liquid
+  assign s = section.settings
+  assign menu = s.menu
+  assign logo = s.logo
+
+  assign nav_tracking = s.nav_letter_spacing | divided_by: 100.0
+  assign mobile_scale = s.mobile_menu_scale | divided_by: 100.0
+
+  comment
+    Fonts: the header uses the theme fonts unless a custom font is chosen. Only fonts that are not already
+    declared by layout/theme.liquid are output, so no @font-face rule is ever printed twice.
+  endcomment
+  assign base_font = settings.type_body_font
+  assign custom_font_needed = false
+  if s.use_custom_font
+    assign base_font = s.header_font
+    assign custom_font_needed = true
+    if base_font.family == settings.type_body_font.family and base_font.weight == settings.type_body_font.weight and base_font.style == settings.type_body_font.style
+      assign custom_font_needed = false
+    endif
+    if base_font.family == settings.type_heading_font.family and base_font.weight == settings.type_heading_font.weight and base_font.style == settings.type_heading_font.style
+      assign custom_font_needed = false
+    endif
+  endif
+  assign nav_font = base_font | font_modify: 'weight', s.nav_font_weight
+-%}
+
+{% style %}
+  {%- if custom_font_needed -%}
+    {{ s.header_font | font_face: font_display: 'swap' }}
+  {%- endif -%}
+  {%- if nav_font.weight != base_font.weight -%}
+    {{ nav_font | font_face: font_display: 'swap' }}
+  {%- endif -%}
+
+  /* Mobile and tablet values first; desktop (1100px and up) overrides below */
+  #shopify-section-{{ section.id }} {
+    position: {% if s.sticky %}sticky{% else %}relative{% endif %};
+    top: 0;
+    z-index: 30;
+    {%- if s.sticky and s.sticky_smart %}
+    transition: transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    {%- endif %}
+
+    --header-bar-height: {{ s.header_height_mobile }}px;
+    --header-gutter: clamp({{ s.padding_x_mobile }}px, 3.4vw, {{ s.padding_x_mobile | times: 2 }}px);
+    --header-logo-width: {{ s.logo_width_mobile }}px;
+    --header-logo-size: {{ s.logo_font_size_mobile }}px;
+    --header-icon-size: {{ s.icon_size_mobile }}px;
+    --header-icon-gap: {{ s.icon_gap }}px;
+    --mobile-menu-scale: {{ mobile_scale }};
+
+    --header-nav-size: {{ s.nav_font_size }}px;
+    --header-nav-weight: {{ nav_font.weight }};
+    --header-nav-tracking: {{ nav_tracking }}em;
+    --header-nav-transform: {{ s.nav_text_transform }};
+    --header-nav-gap: {{ s.nav_gap }}px;
+
+    --mega-heading-size: {{ s.mega_heading_size }}px;
+    --mega-link-size: {{ s.mega_link_size }}px;
+    --mega-column-gap: {{ s.mega_column_gap }}px;
+
+    {%- if s.use_custom_font %}
+    --font-body: {{ base_font.family }}, {{ base_font.fallback_families }};
+    --font-body-weight: {{ base_font.weight }};
+    --font-heading: {{ base_font.family }}, {{ base_font.fallback_families }};
+    --font-heading-weight: {{ base_font.weight }};
+    {%- endif %}
+
+    {%- if s.header_background != blank %}
+    --header-bg: {{ s.header_background }};
+    {%- endif %}
+    {%- if s.header_text != blank %}
+    --header-fg: {{ s.header_text }};
+    {%- endif %}
+    {%- if s.logo_color != blank %}
+    --header-logo-color: {{ s.logo_color }};
+    {%- endif %}
+    {%- if s.menu_color != blank %}
+    --header-menu-color: {{ s.menu_color }};
+    {%- endif %}
+    {%- if s.header_accent != blank %}
+    --header-accent: {{ s.header_accent }};
+    {%- endif %}
+    {%- if s.menu_active_color != blank %}
+    --header-active-color: {{ s.menu_active_color }};
+    {%- endif %}
+    {%- if s.icon_color != blank %}
+    --header-icon-color: {{ s.icon_color }};
+    {%- endif %}
+    {%- if s.mega_background != blank %}
+    --mega-bg: {{ s.mega_background }};
+    {%- endif %}
+    {%- if s.mega_heading_color != blank %}
+    --mega-heading-color: {{ s.mega_heading_color }};
+    {%- endif %}
+    {%- if s.mega_link_color != blank %}
+    --mega-link-color: {{ s.mega_link_color }};
+    {%- endif %}
+    {%- if s.mega_divider_color != blank %}
+    --mega-divider: {{ s.mega_divider_color }};
+    {%- endif %}
+  }
+
+  @media (min-width: 1100px) {
+    #shopify-section-{{ section.id }} {
+      --header-bar-height: {{ s.header_height }}px;
+      --header-gutter: clamp(1.25rem, 3.4vw, {{ s.padding_x }}px);
+      --header-logo-width: {{ s.logo_width }}px;
+      --header-logo-size: {{ s.logo_font_size }}px;
+      --header-icon-size: {{ s.icon_size }}px;
+    }
+  }
+{% endstyle %}
+
+<header
+  class="header"
+  data-header
+  data-nav-align="{{ s.nav_alignment }}"
+  data-mobile-logo="{{ s.mobile_logo_alignment }}"
+  {%- if s.sticky and s.sticky_smart %} data-sticky-smart{% endif %}
+>
+  <div class="header__inner">
+    <button
+      class="icon-button header__toggle"
+      type="button"
+      aria-haspopup="dialog"
+      aria-controls="MobileMenuDrawer"
+      aria-expanded="false"
+      data-drawer-open="menu"
+    >
+      <span class="visually-hidden">{{ 'general.menu' | t }}</span>
+      {% render 'icon', name: 'menu' %}
+    </button>
+
+    <a class="header__logo" href="{{ routes.root_url }}">
+      {%- if logo != blank -%}
+        {{
+          logo
+          | image_url: width: 600
+          | image_tag:
+            loading: 'eager',
+            width: section.settings.logo_width,
+            alt: shop.name
+        }}
+      {%- else -%}
+        <span class="header__logo-text">{{ shop.name | escape }}</span>
+      {%- endif -%}
+    </a>
+
+    {%- if menu != blank and menu.links.size > 0 -%}
+      <nav class="header__nav" aria-label="{{ 'accessibility.main_navigation' | t }}">
+        <ul class="menu" role="list">
+          {%- for link in menu.links -%}
+            {%- liquid
+              assign mega_block = nil
+              assign link_key = link.title | strip | handleize
+              for block in section.blocks
+                assign block_key = block.settings.trigger_label | strip | handleize
+                if block_key == link_key and block_key != blank
+                  assign mega_block = block
+                  break
+                endif
+              endfor
+
+              assign item_type = 'link'
+              if mega_block
+                assign item_type = 'mega'
+              elsif link.links.size > 0
+                assign item_type = 'dropdown'
+              endif
+            -%}
+
+            <li
+              class="menu__item{% if link.active or link.child_active %} is-current{% endif %}"
+              data-menu-item
+              data-menu-type="{{ item_type }}"
+              {%- if mega_block %} data-mega-target="Mega-{{ mega_block.id }}"{% endif %}
+            >
+              <a class="menu__link" href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>
+                <span class="menu__label">{{ link.title | escape }}</span>
+              </a>
+
+              {%- if item_type == 'mega' -%}
+                <button
+                  class="menu__toggle"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="Mega-{{ mega_block.id }}"
+                  aria-label="{{ 'general.toggle_submenu' | t }}: {{ link.title | escape }}"
+                  data-menu-toggle
+                >
+                  {% render 'icon', name: 'chevron-down' %}
+                </button>
+              {%- elsif item_type == 'dropdown' -%}
+                <button
+                  class="menu__toggle"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="Sub-{{ section.id }}-{{ forloop.index }}"
+                  aria-label="{{ 'general.toggle_submenu' | t }}: {{ link.title | escape }}"
+                  data-menu-toggle
+                >
+                  {% render 'icon', name: 'chevron-down' %}
+                </button>
+                <ul class="menu__sub" id="Sub-{{ section.id }}-{{ forloop.index }}" role="list" tabindex="-1">
+                  {%- for child in link.links -%}
+                    <li class="menu__subitem">
+                      <a class="menu__sublink" href="{{ child.url }}"{% if child.current %} aria-current="page"{% endif %}>{{ child.title | escape }}</a>
+                      {%- if child.links.size > 0 -%}
+                        <ul class="menu__subsub" role="list">
+                          {%- for grandchild in child.links -%}
+                            <li><a class="menu__subsublink" href="{{ grandchild.url }}"{% if grandchild.current %} aria-current="page"{% endif %}>{{ grandchild.title | escape }}</a></li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+
+    {% render 'header-icons',
+      show_search: section.settings.show_search,
+      show_account: section.settings.show_account,
+      show_cart: section.settings.show_cart
+    %}
+  </div>
+
+  {%- if section.blocks.size > 0 -%}
+    <div class="mega" data-mega>
+      <div class="mega__panels">
+        {%- for block in section.blocks -%}
+          {% render 'mega-menu', block: block %}
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+
+  {% render 'mobile-menu', section: section %}
+</header>
+
+{% schema %}
+{
+  "name": "Header",
+  "enabled_on": {
+    "groups": [
+      "header"
+    ]
+  },
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image",
+      "info": "Leave empty to show the store name as text."
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "label": "Logo width, desktop",
+      "min": 60,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "default": 140
+    },
+    {
+      "type": "range",
+      "id": "logo_width_mobile",
+      "label": "Logo width, mobile",
+      "min": 40,
+      "max": 240,
+      "step": 10,
+      "unit": "px",
+      "default": 140
+    },
+    {
+      "type": "range",
+      "id": "logo_font_size",
+      "label": "Text logo size, desktop",
+      "min": 16,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 26,
+      "info": "Used when no logo image is set."
+    },
+    {
+      "type": "range",
+      "id": "logo_font_size_mobile",
+      "label": "Text logo size, mobile",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "select",
+      "id": "mobile_logo_alignment",
+      "label": "Logo alignment, mobile",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "select",
+      "id": "nav_alignment",
+      "label": "Menu position, desktop",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centered"
+        },
+        {
+          "value": "left",
+          "label": "Next to the logo"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "nav_gap",
+      "label": "Space between menu items, desktop",
+      "min": 16,
+      "max": 72,
+      "step": 4,
+      "unit": "px",
+      "default": 40,
+      "info": "Maximum spacing; it tightens on narrower screens."
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_custom_font",
+      "label": "Use a different font in the header",
+      "default": false,
+      "info": "Applies to the logo text, menu, mega menu and mobile menu. Off = theme fonts."
+    },
+    {
+      "type": "font_picker",
+      "id": "header_font",
+      "label": "Header font",
+      "default": "inter_n4",
+      "visible_if": "{{ section.settings.use_custom_font }}"
+    },
+    {
+      "type": "range",
+      "id": "nav_font_size",
+      "label": "Menu font size, desktop",
+      "min": 11,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "select",
+      "id": "nav_font_weight",
+      "label": "Menu font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400",
+      "info": "Uses the closest weight the font provides."
+    },
+    {
+      "type": "range",
+      "id": "nav_letter_spacing",
+      "label": "Menu letter spacing",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "%",
+      "default": 10,
+      "info": "Percent of the font size."
+    },
+    {
+      "type": "select",
+      "id": "nav_text_transform",
+      "label": "Menu text transform",
+      "options": [
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "capitalize",
+          "label": "Capitalize"
+        }
+      ],
+      "default": "uppercase"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "header_height",
+      "label": "Header height, desktop",
+      "min": 52,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 68
+    },
+    {
+      "type": "range",
+      "id": "header_height_mobile",
+      "label": "Header height, mobile",
+      "min": 48,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 68
+    },
+    {
+      "type": "range",
+      "id": "padding_x",
+      "label": "Horizontal padding, desktop",
+      "min": 16,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64,
+      "info": "Maximum side padding; it scales with the screen width."
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "label": "Horizontal padding, mobile",
+      "min": 12,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20,
+      "info": "Minimum side padding; it grows slightly on tablets."
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky",
+      "label": "Keep header visible when scrolling",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_smart",
+      "label": "Hide when scrolling down, show when scrolling up",
+      "default": false,
+      "visible_if": "{{ section.settings.sticky }}"
+    },
+    {
+      "type": "header",
+      "content": "Icons"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon size, desktop",
+      "min": 16,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "icon_size_mobile",
+      "label": "Icon size, mobile",
+      "min": 16,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "icon_gap",
+      "label": "Space between icons",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Show search",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "label": "Show account",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart",
+      "label": "Show cart",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "header_background",
+      "label": "Header background",
+      "info": "Leave empty to use the header color from Theme settings."
+    },
+    {
+      "type": "color",
+      "id": "header_text",
+      "label": "Header text",
+      "info": "Base color for the logo, menu and icons. Leave empty to use the theme text color."
+    },
+    {
+      "type": "color",
+      "id": "logo_color",
+      "label": "Logo",
+      "info": "Leave empty to use the header text color."
+    },
+    {
+      "type": "color",
+      "id": "menu_color",
+      "label": "Menu text",
+      "info": "Leave empty to use the header text color."
+    },
+    {
+      "type": "color",
+      "id": "header_accent",
+      "label": "Menu hover color",
+      "info": "Also used for links and highlights in the header. Leave empty to use the theme accent color."
+    },
+    {
+      "type": "color",
+      "id": "menu_active_color",
+      "label": "Menu active color",
+      "info": "Color of the item for the current page. Leave empty to use the menu text color."
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icons",
+      "info": "Leave empty to use the header text color."
+    },
+    {
+      "type": "header",
+      "content": "Mega menu and dropdown"
+    },
+    {
+      "type": "color",
+      "id": "mega_background",
+      "label": "Background",
+      "info": "Leave empty to match the header background."
+    },
+    {
+      "type": "color",
+      "id": "mega_heading_color",
+      "label": "Heading text",
+      "info": "Leave empty to use the theme accent color."
+    },
+    {
+      "type": "color",
+      "id": "mega_link_color",
+      "label": "Link text",
+      "info": "Leave empty to use the theme muted text color."
+    },
+    {
+      "type": "color",
+      "id": "mega_divider_color",
+      "label": "Dividers and borders",
+      "info": "Leave empty to use the theme border color."
+    },
+    {
+      "type": "range",
+      "id": "mega_heading_size",
+      "label": "Heading size",
+      "min": 11,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "mega_link_size",
+      "label": "Link size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "mega_column_gap",
+      "label": "Column spacing",
+      "min": 16,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Mobile menu"
+    },
+    {
+      "type": "range",
+      "id": "mobile_menu_scale",
+      "label": "Menu text size",
+      "min": 80,
+      "max": 120,
+      "step": 5,
+      "unit": "%",
+      "default": 100,
+      "info": "Scales the large menu and submenu titles."
+    },
+    {
+      "type": "header",
+      "content": "Mobile menu: campaign banner"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_banner_image",
+      "label": "Image",
+      "info": "Portrait works best. Shown on the first screen of the mobile menu."
+    },
+    {
+      "type": "text",
+      "id": "mobile_banner_eyebrow",
+      "label": "Eyebrow text"
+    },
+    {
+      "type": "text",
+      "id": "mobile_banner_heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "mobile_banner_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "mobile_banner_url",
+      "label": "Button link"
+    },
+    {
+      "type": "range",
+      "id": "mobile_banner_overlay",
+      "label": "Image overlay",
+      "min": 0,
+      "max": 70,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Mobile menu: secondary links"
+    },
+    {
+      "type": "link_list",
+      "id": "mobile_secondary_menu",
+      "label": "Menu",
+      "info": "Optional small links under the search / account / cart row, for example Contact or Shipping."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "mega_menu",
+      "name": "Mega menu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "trigger_label",
+          "label": "Menu item label",
+          "info": "Must match the title of a top-level link in the menu above (not case sensitive). That item opens this mega menu."
+        },
+        {
+          "type": "select",
+          "id": "layout",
+          "label": "Layout",
+          "options": [
+            {
+              "value": "multi",
+              "label": "Multi-column (full width, up to 3 columns)"
+            },
+            {
+              "value": "single",
+              "label": "Single column (compact panel under the item)"
+            }
+          ],
+          "default": "multi",
+          "info": "Single column uses only the first column that has a menu."
+        },
+        {
+          "type": "header",
+          "content": "Column 1"
+        },
+        {
+          "type": "text",
+          "id": "heading_1",
+          "label": "Heading",
+          "info": "Optional. Without a heading the links are shown as primary links."
+        },
+        {
+          "type": "link_list",
+          "id": "menu_1",
+          "label": "Menu"
+        },
+        {
+          "type": "header",
+          "content": "Column 2"
+        },
+        {
+          "type": "text",
+          "id": "heading_2",
+          "label": "Heading"
+        },
+        {
+          "type": "link_list",
+          "id": "menu_2",
+          "label": "Menu"
+        },
+        {
+          "type": "header",
+          "content": "Column 3"
+        },
+        {
+          "type": "text",
+          "id": "heading_3",
+          "label": "Heading"
+        },
+        {
+          "type": "link_list",
+          "id": "menu_3",
+          "label": "Menu"
+        },
+        {
+          "type": "header",
+          "content": "Promotional content"
+        },
+        {
+          "type": "image_picker",
+          "id": "promo_image",
+          "label": "Image",
+          "info": "At least 900 px wide."
+        },
+        {
+          "type": "text",
+          "id": "promo_heading",
+          "label": "Heading"
+        },
+        {
+          "type": "textarea",
+          "id": "promo_description",
+          "label": "Description"
+        },
+        {
+          "type": "text",
+          "id": "promo_cta_label",
+          "label": "Button label"
+        },
+        {
+          "type": "url",
+          "id": "promo_cta_url",
+          "label": "Button link"
+        },
+        {
+          "type": "header",
+          "content": "Promotional image layout"
+        },
+        {
+          "type": "select",
+          "id": "promo_position",
+          "label": "Image position",
+          "options": [
+            {
+              "value": "right",
+              "label": "Right"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            }
+          ],
+          "default": "right"
+        },
+        {
+          "type": "range",
+          "id": "promo_width",
+          "label": "Image width",
+          "min": 20,
+          "max": 60,
+          "step": 5,
+          "unit": "%",
+          "default": 35,
+          "visible_if": "{{ block.settings.layout == 'multi' }}"
+        },
+        {
+          "type": "range",
+          "id": "promo_width_single",
+          "label": "Image width",
+          "min": 30,
+          "max": 70,
+          "step": 5,
+          "unit": "%",
+          "default": 55,
+          "visible_if": "{{ block.settings.layout == 'single' }}"
+        },
+        {
+          "type": "range",
+          "id": "promo_height",
+          "label": "Minimum height",
+          "min": 240,
+          "max": 640,
+          "step": 20,
+          "unit": "px",
+          "default": 360
+        },
+        {
+          "type": "select",
+          "id": "promo_fit",
+          "label": "Image fit",
+          "options": [
+            {
+              "value": "cover",
+              "label": "Cover"
+            },
+            {
+              "value": "contain",
+              "label": "Contain"
+            }
+          ],
+          "default": "cover"
+        },
+        {
+          "type": "select",
+          "id": "promo_focus_x",
+          "label": "Focal point, horizontal",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "select",
+          "id": "promo_focus_y",
+          "label": "Focal point, vertical",
+          "options": [
+            {
+              "value": "top",
+              "label": "Top"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "bottom",
+              "label": "Bottom"
+            }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "checkbox",
+          "id": "promo_overlay",
+          "label": "Show image overlay",
+          "default": true
+        },
+        {
+          "type": "range",
+          "id": "promo_overlay_opacity",
+          "label": "Overlay opacity",
+          "min": 0,
+          "max": 80,
+          "step": 5,
+          "unit": "%",
+          "default": 25
+        },
+        {
+          "type": "header",
+          "content": "Promotional text alignment"
+        },
+        {
+          "type": "select",
+          "id": "promo_text_align",
+          "label": "Content alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "select",
+          "id": "promo_text_valign",
+          "label": "Vertical content alignment",
+          "options": [
+            {
+              "value": "top",
+              "label": "Top"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "bottom",
+              "label": "Bottom"
+            }
+          ],
+          "default": "bottom"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

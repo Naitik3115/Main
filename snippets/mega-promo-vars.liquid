@@ -1,0 +1,58 @@
+{%- comment -%}
+  Outputs inline CSS custom properties describing how a mega menu promotional image is fitted and aligned.
+  Shared by the desktop panel (mega-menu.liquid) and the mobile menu (mobile-menu.liquid).
+  Accepts:
+  - s: the mega menu block settings
+  Usage: {%- capture promo_vars -%}{% render 'mega-promo-vars', s: block.settings %}{%- endcapture -%}
+{%- endcomment -%}
+{%- liquid
+  case s.promo_focus_x
+    when 'left'
+      assign pos_x = '0%'
+    when 'right'
+      assign pos_x = '100%'
+    else
+      assign pos_x = '50%'
+  endcase
+
+  case s.promo_focus_y
+    when 'top'
+      assign pos_y = '0%'
+    when 'bottom'
+      assign pos_y = '100%'
+    else
+      assign pos_y = '50%'
+  endcase
+
+  case s.promo_text_align
+    when 'center'
+      assign justify = 'center'
+      assign text_align = 'center'
+    when 'right'
+      assign justify = 'flex-end'
+      assign text_align = 'right'
+    else
+      assign justify = 'flex-start'
+      assign text_align = 'left'
+  endcase
+
+  case s.promo_text_valign
+    when 'top'
+      assign valign = 'flex-start'
+    when 'center'
+      assign valign = 'center'
+    else
+      assign valign = 'flex-end'
+  endcase
+
+  assign fit = 'cover'
+  if s.promo_fit == 'contain'
+    assign fit = 'contain'
+  endif
+
+  assign overlay = 0
+  if s.promo_overlay
+    assign overlay = s.promo_overlay_opacity | divided_by: 100.0
+  endif
+-%}
+--promo-fit: {{ fit }}; --promo-position: {{ pos_x }} {{ pos_y }}; --promo-overlay: {{ overlay }}; --promo-justify: {{ justify }}; --promo-valign: {{ valign }}; --promo-text-align: {{ text_align }};

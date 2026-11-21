@@ -1,0 +1,36 @@
+{%- comment -%}
+  Renders an inline SVG icon.
+  Accepts:
+  - name: menu | close | search | account | cart | chevron-down | chevron-left | chevron-right | plus | minus | arrow-right | arrow-left | arrow-up-right
+  Usage: {% render 'icon', name: 'menu' %}
+{%- endcomment -%}
+<svg class="icon icon--{{ name }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  {%- case name -%}
+    {%- when 'menu' -%}
+      <path d="M3 7h18M3 12h18M3 17h18"/>
+    {%- when 'close' -%}
+      <path d="M6 6l12 12M18 6L6 18"/>
+    {%- when 'search' -%}
+      <circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>
+    {%- when 'account' -%}
+      <circle cx="12" cy="8" r="3.75"/><path d="M4.5 20.25c.9-3.7 3.9-5.75 7.5-5.75s6.6 2.05 7.5 5.75"/>
+    {%- when 'cart' -%}
+      <path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+    {%- when 'chevron-down' -%}
+      <path d="M6 9l6 6 6-6"/>
+    {%- when 'chevron-left' -%}
+      <path d="M15 6l-6 6 6 6"/>
+    {%- when 'chevron-right' -%}
+      <path d="M9 6l6 6-6 6"/>
+    {%- when 'arrow-right' -%}
+      <path d="M4 12h16M14 6l6 6-6 6"/>
+    {%- when 'arrow-left' -%}
+      <path d="M20 12H4M10 6l-6 6 6 6"/>
+    {%- when 'arrow-up-right' -%}
+      <path d="M7 17L17 7M8 7h9v9"/>
+    {%- when 'plus' -%}
+      <path d="M12 5v14M5 12h14"/>
+    {%- when 'minus' -%}
+      <path d="M5 12h14"/>
+  {%- endcase -%}
+</svg>

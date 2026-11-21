@@ -1,0 +1,18 @@
+{%- comment -%}
+  Back button and oversized title shared by every submenu panel of the mobile menu.
+  Accepts:
+  - title: panel title
+  - eyebrow: optional small label above the title (for example the parent category)
+  Usage: {% render 'mobile-panel-head', title: link.title, eyebrow: parent.title %}
+{%- endcomment -%}
+<button class="mobile-panel__back" type="button" data-panel-back>
+  {% render 'icon', name: 'arrow-left' %}
+  <span>{{ 'general.back' | t }}</span>
+</button>
+<div class="mobile-panel__head">
+  {%- if eyebrow != blank -%}
+    <p class="mobile-panel__eyebrow">{{ eyebrow | escape }}</p>
+  {%- endif -%}
+  <h2 class="mobile-panel__title"><span class="mobile-nav__mask"><span class="mobile-nav__text">{{ title | escape }}</span></span></h2>
+  <span class="mobile-panel__rule" aria-hidden="true"></span>
+</div>

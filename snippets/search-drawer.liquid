@@ -1,0 +1,58 @@
+{%- comment -%}
+  Search drawer. Opened by any [data-drawer-open="search"] link; behaviour lives in assets/search-drawer.js.
+  Results are rendered by sections/predictive-search.liquid through Shopify's predictive search endpoint.
+{%- endcomment -%}
+{%- capture empty_text -%}{{ 'search.no_results_for' | t: terms: '__TERM__' }}{%- endcapture -%}
+
+<div
+  class="drawer drawer--top search-drawer"
+  id="SearchDrawer"
+  data-drawer="search"
+  role="dialog"
+  aria-modal="true"
+  aria-label="{{ 'search.title' | t }}"
+  aria-hidden="true"
+  data-predictive-url="{{ routes.predictive_search_url }}"
+  data-hint-text="{{ 'search.hint' | t | escape }}"
+  data-loading-text="{{ 'search.loading' | t | escape }}"
+  data-empty-text="{{ empty_text | escape }}"
+  data-error-text="{{ 'search.error' | t | escape }}"
+>
+  <div class="drawer__overlay" data-drawer-close></div>
+  <div class="drawer__panel">
+    <div class="search-drawer__inner container">
+      <div class="search-drawer__bar">
+        <form class="search-drawer__form" action="{{ routes.search_url }}" method="get" role="search" data-search-form>
+          <button class="search-drawer__submit" type="submit" aria-label="{{ 'search.submit' | t }}">
+            {% render 'icon', name: 'search' %}
+          </button>
+          <label class="visually-hidden" for="SearchDrawerInput">{{ 'search.title' | t }}</label>
+          <input
+            class="search-drawer__input"
+            id="SearchDrawerInput"
+            type="search"
+            name="q"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="{{ 'search.placeholder' | t }}"
+            data-drawer-focus
+            data-search-input
+          >
+          <input type="hidden" name="type" value="product">
+          <input type="hidden" name="options[prefix]" value="last">
+          <button class="search-drawer__clear" type="button" aria-label="{{ 'search.clear' | t }}" data-search-clear hidden>
+            {% render 'icon', name: 'close' %}
+          </button>
+        </form>
+        <button class="icon-button search-drawer__close" type="button" data-drawer-close aria-label="{{ 'general.dialog_close' | t }}">
+          {% render 'icon', name: 'close' %}
+        </button>
+      </div>
+
+      <div class="search-drawer__results" data-search-results aria-live="polite">
+        <p class="search-drawer__message">{{ 'search.hint' | t }}</p>
+      </div>
+    </div>
+  </div>
+</div>

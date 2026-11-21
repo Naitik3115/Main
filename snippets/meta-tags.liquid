@@ -1,0 +1,39 @@
+{%- liquid
+  assign meta_description = page_description | default: shop.description | strip_html | escape
+  assign meta_title = page_title | escape
+  if request.page_type == 'product'
+    assign og_type = 'product'
+  else
+    assign og_type = 'website'
+  endif
+-%}
+
+<title>
+  {{- meta_title -}}
+  {%- if current_page != 1 %} &ndash; {{ 'general.page_number' | t: page: current_page }}{% endif -%}
+  {%- unless page_title contains shop.name %} &ndash; {{ shop.name | escape }}{% endunless -%}
+</title>
+
+{%- if meta_description != blank -%}
+  <meta name="description" content="{{ meta_description }}">
+{%- endif -%}
+
+<link rel="canonical" href="{{ canonical_url }}">
+
+<meta property="og:site_name" content="{{ shop.name | escape }}">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:title" content="{{ meta_title }}">
+<meta property="og:type" content="{{ og_type }}">
+{%- if meta_description != blank -%}
+  <meta property="og:description" content="{{ meta_description }}">
+{%- endif -%}
+{%- if page_image -%}
+  <meta property="og:image" content="{{ page_image | image_url: width: 1200 }}">
+  <meta property="og:image:alt" content="{{ page_image.alt | default: meta_title | escape }}">
+{%- endif -%}
+
+<meta name="twitter:card" content="{% if page_image %}summary_large_image{% else %}summary{% endif %}">
+<meta name="twitter:title" content="{{ meta_title }}">
+{%- if meta_description != blank -%}
+  <meta name="twitter:description" content="{{ meta_description }}">
+{%- endif -%}

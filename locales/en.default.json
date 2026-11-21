@@ -1,0 +1,80 @@
+{
+  "accessibility": {
+    "skip_to_content": "Skip to content",
+    "main_navigation": "Main navigation",
+    "mobile_navigation": "Mobile navigation",
+    "footer_navigation": "Footer navigation",
+    "pagination": "Pagination",
+    "announcements": "Announcements",
+    "previous_announcement": "Previous announcement",
+    "next_announcement": "Next announcement",
+    "close": "Close"
+  },
+  "general": {
+    "menu": "Menu",
+    "close_menu": "Close menu",
+    "search": "Search",
+    "cart": "Cart",
+    "page_number": "Page {{ page }}",
+    "close": "Close",
+    "account": "Account",
+    "log_in": "Log in",
+    "toggle_submenu": "Toggle submenu",
+    "dialog_close": "Close dialog",
+    "back": "Back",
+    "view_all": "View all"
+  },
+  "products": {
+    "add_to_cart": "Add to cart",
+    "sold_out": "Sold out",
+    "variant": "Option",
+    "from": "From"
+  },
+  "collection": {
+    "empty": "No products found in this collection."
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty.",
+    "continue_shopping": "Continue shopping",
+    "remove": "Remove",
+    "quantity": "Quantity",
+    "update": "Update cart",
+    "checkout": "Check out",
+    "subtotal": "Subtotal",
+    "taxes_note": "Taxes and shipping are calculated at checkout.",
+    "close": "Close cart",
+    "view_cart": "View cart",
+    "decrease_quantity": "Decrease quantity",
+    "increase_quantity": "Increase quantity",
+    "remove_item": "Remove item",
+    "line_total": "Total",
+    "updated_status": {
+      "one": "Cart updated. {{ count }} item in your cart.",
+      "other": "Cart updated. {{ count }} items in your cart."
+    },
+    "error_generic": "Something went wrong. Please try again."
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search our store",
+    "submit": "Search",
+    "results_count": {
+      "one": "{{ count }} result found",
+      "other": "{{ count }} results found"
+    },
+    "no_results": "No results found. Try a different search.",
+    "clear": "Clear search",
+    "hint": "Start typing to see product suggestions.",
+    "loading": "Searching…",
+    "no_results_for": "No products found for “{{ terms }}”. Try a different word or check the spelling.",
+    "error": "Suggestions are unavailable right now. Press Enter to see all results.",
+    "view_all": "View all results",
+    "sold_out": "Sold out"
+  },
+  "not_found": {
+    "title": "Page not found",
+    "message": "The page you are looking for does not exist or has moved.",
+    "back_home": "Back to home"
+  }
+}

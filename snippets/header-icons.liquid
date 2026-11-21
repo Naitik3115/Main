@@ -1,0 +1,45 @@
+{%- comment -%}
+  Header action icons: search, account, cart (with live quantity badge).
+  Accepts:
+  - show_search: boolean
+  - show_account: boolean
+  - show_cart: boolean
+  Usage: {% render 'header-icons', show_search: true, show_account: true, show_cart: true %}
+{%- endcomment -%}
+<div class="header__actions">
+  {%- if show_search -%}
+    <a
+      class="icon-button"
+      href="{{ routes.search_url }}"
+      data-drawer-open="search"
+      aria-haspopup="dialog"
+      aria-controls="SearchDrawer"
+      aria-expanded="false"
+    >
+      <span class="visually-hidden">{{ 'general.search' | t }}</span>
+      {% render 'icon', name: 'search' %}
+    </a>
+  {%- endif -%}
+
+  {%- if show_account and shop.customer_accounts_enabled -%}
+    <a class="icon-button header__account" href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}">
+      <span class="visually-hidden">{% if customer %}{{ 'general.account' | t }}{% else %}{{ 'general.log_in' | t }}{% endif %}</span>
+      {% render 'icon', name: 'account' %}
+    </a>
+  {%- endif -%}
+
+  {%- if show_cart -%}
+    <a
+      class="icon-button header__cart"
+      href="{{ routes.cart_url }}"
+      data-drawer-open="cart"
+      aria-haspopup="dialog"
+      aria-controls="CartDrawer"
+      aria-expanded="false"
+    >
+      <span class="visually-hidden">{{ 'general.cart' | t }}</span>
+      {% render 'icon', name: 'cart' %}
+      <span class="cart-count" data-cart-count>{{ cart.item_count }}</span>
+    </a>
+  {%- endif -%}
+</div>

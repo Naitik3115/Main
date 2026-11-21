@@ -1,0 +1,51 @@
+{%- comment -%}
+  Rendered by the Section Rendering API for the search drawer
+  (routes.predictive_search_url?section_id=predictive-search). Not placed on any page.
+{%- endcomment -%}
+{%- if predictive_search.performed -%}
+  {%- assign products = predictive_search.resources.products -%}
+  <div data-predictive-results data-result-count="{{ products.size }}">
+    {%- if products.size > 0 -%}
+      <ul class="suggestions" role="list">
+        {%- for product in products -%}
+          {%- assign suggestion_alt = product.featured_image.alt | default: product.title | escape -%}
+          <li>
+            <a class="suggestion" href="{{ product.url }}">
+              <span class="suggestion__media">
+                {%- if product.featured_image -%}
+                  {{
+                    product.featured_image
+                    | image_url: width: 240
+                    | image_tag: loading: 'lazy', widths: '120, 240', sizes: '80px', alt: suggestion_alt
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'placeholder' }}
+                {%- endif -%}
+              </span>
+              <span class="suggestion__body">
+                <span class="suggestion__title">{{ product.title | escape }}</span>
+                <span class="suggestion__price">
+                  {%- if product.price_varies -%}{{ 'products.from' | t }} {% endif -%}
+                  {{ product.price | money }}
+                </span>
+                {%- unless product.available -%}
+                  <span class="suggestion__badge">{{ 'search.sold_out' | t }}</span>
+                {%- endunless -%}
+              </span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <a class="button button--secondary search-drawer__all" href="{{ routes.search_url }}?q={{ predictive_search.terms | url_encode }}&type=product">
+        {{- 'search.view_all' | t -}}
+      </a>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Predictive search",
+  "settings": []
+}
+{% endschema %}

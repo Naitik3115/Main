@@ -1,0 +1,36 @@
+{%- comment -%}
+  One row of the mobile menu: a drill-down button (opens a panel) or a link, with a mask-reveal label
+  and an arrow that animates on tap. Used at every level so all panels share one design.
+  Accepts:
+  - level: 'primary' (large, numbered) | 'sub' | 'all' (the "View all" row)
+  - title, url
+  - panel_id: id of the panel to open. Leave empty for a normal link.
+  - i: stagger position (number)
+  - current: boolean, the item or a child is the current page
+  - exact: boolean, the item is exactly the current page (adds aria-current)
+  - index_label: optional "01" style label (primary level)
+  Usage: {% render 'mobile-nav-row', level: 'sub', title: link.title, url: link.url, i: 2 %}
+{%- endcomment -%}
+<li class="mobile-nav__item mobile-nav__item--{{ level }}{% if current %} is-current{% endif %}" style="--i: {{ i | default: 0 }}">
+  {%- if panel_id != blank -%}
+    <button class="mobile-nav__link mobile-nav__link--{{ level }} mobile-nav__drill" type="button" data-panel-open="{{ panel_id }}">
+  {%- else -%}
+    <a class="mobile-nav__link mobile-nav__link--{{ level }}" href="{{ url }}"{% if exact %} aria-current="page"{% endif %}>
+  {%- endif -%}
+    {%- if index_label != blank -%}
+      <span class="mobile-nav__index" aria-hidden="true">{{ index_label }}</span>
+    {%- endif -%}
+    <span class="mobile-nav__mask"><span class="mobile-nav__text">{{ title | escape }}</span></span>
+    <span class="mobile-nav__arrow" aria-hidden="true">
+      {%- if panel_id != blank -%}
+        {% render 'icon', name: 'arrow-right' %}
+      {%- else -%}
+        {% render 'icon', name: 'arrow-up-right' %}
+      {%- endif -%}
+    </span>
+  {%- if panel_id != blank -%}
+    </button>
+  {%- else -%}
+    </a>
+  {%- endif -%}
+</li>

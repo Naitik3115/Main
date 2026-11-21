@@ -1,0 +1,294 @@
+/* NØRTH — mega-menu.css
+   Desktop mega menu (1100px and up). Two layouts, set per block in the theme editor:
+   - multi:  full-width drawer directly under the header, up to 3 link columns + promotional image
+   - single: compact panel anchored under the trigger, one column + promotional image
+   Small screens use the full-screen mobile menu (header.css) instead.
+
+   Structure: .mega (animated, transparent, click-through layer)
+                └ .mega__panels (grid: every panel shares one cell, so switching never changes height)
+                    └ .mega__panel (own background; cross-fades)
+   Promo settings arrive as CSS custom properties set inline by snippets/mega-menu.liquid:
+   --promo-w, --promo-height, --cols, --promo-fit, --promo-position, --promo-overlay,
+   --promo-justify, --promo-valign, --promo-text-align */
+
+.mega {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .mega {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    display: block;
+    pointer-events: none; /* transparent area beside/below compact panels must not block the page */
+
+    /* Closed: collapsed from the bottom edge, so opening reveals top to bottom */
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-0.5rem);
+    clip-path: inset(0 0 100% 0);
+    transition:
+      clip-path 440ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      opacity 260ms ease,
+      transform 440ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      visibility 0s linear 440ms;
+  }
+
+  .mega.is-open {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0);
+    transition-delay: 0s;
+  }
+
+  /* All panels share one grid cell: the drawer keeps a steady height and panels cross-fade in place */
+  .mega__panels {
+    display: grid;
+  }
+
+  .mega__panel {
+    grid-area: 1 / 1;
+    align-self: start;
+    background: var(--mega-bg, var(--header-bg, var(--color-header-background)));
+    color: var(--header-fg, var(--color-foreground));
+    border-bottom: 1px solid var(--mega-divider, var(--color-border));
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 260ms ease, visibility 0s linear 260ms;
+  }
+
+  .mega__panel:focus {
+    outline: none;
+  }
+
+  .mega__panel.is-active {
+    visibility: inherit;
+    opacity: 1;
+    pointer-events: auto;
+    transition-delay: 0s;
+  }
+
+  /* ----- Single-column layout: compact panel under the trigger (left set from header.js) ----- */
+  .mega__panel[data-layout="single"] {
+    justify-self: start;
+    width: min(var(--single-width, 46rem), calc(100% - 2rem));
+    margin-left: var(--mega-left, var(--header-gutter));
+    border: 1px solid var(--mega-divider, var(--color-border));
+    border-top: 0;
+  }
+
+  /* ----- Layout grid ----- */
+  .mega__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--promo-w, 35%);
+    min-height: var(--promo-height, 360px);
+  }
+
+  .mega__layout--promo-left {
+    grid-template-columns: var(--promo-w, 35%) minmax(0, 1fr);
+  }
+
+  .mega__layout--promo-left .mega__promo {
+    order: -1;
+  }
+
+  .mega__layout--no-promo {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  /* ----- Columns: the grid adapts to the number of configured columns (--cols) ----- */
+  .mega__columns {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+    align-content: start;
+    padding: 2.25rem 2rem 2.5rem var(--header-gutter);
+    transform: translateY(-0.375rem);
+    transition: transform 440ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .mega__layout--promo-left .mega__columns {
+    padding: 2.25rem var(--header-gutter) 2.5rem 2.5rem;
+  }
+
+  .mega__layout--single .mega__columns,
+  .mega__layout--single.mega__layout--promo-left .mega__columns {
+    padding: 2rem 2rem 2.25rem;
+  }
+
+  .mega.is-open .mega__panel.is-active .mega__columns {
+    transform: none;
+  }
+
+  .mega__column {
+    padding-right: calc(var(--mega-column-gap, 2.5rem) * 0.8);
+  }
+
+  .mega__column + .mega__column {
+    padding-left: var(--mega-column-gap, 2.5rem);
+    border-left: 1px solid var(--mega-divider, var(--color-border));
+  }
+
+  .mega__layout--single .mega__column {
+    padding-right: 0;
+  }
+
+  .mega__heading {
+    margin: 0 0 1rem;
+    color: var(--mega-heading-color, var(--header-accent, var(--color-accent)));
+    font-size: var(--mega-heading-size, 0.8125rem);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .mega__list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mega__link {
+    display: inline-block;
+    color: var(--mega-link-color, var(--color-muted));
+    font-size: var(--mega-link-size, 0.9375rem);
+    text-decoration: none;
+    transition: color var(--transition), transform var(--transition);
+  }
+
+  .mega__link:hover,
+  .mega__link[aria-current="page"] {
+    color: var(--header-accent, var(--color-accent));
+    transform: translateX(0.125rem);
+  }
+
+  /* A column without a heading reads as the primary link list */
+  .mega__column--primary .mega__list {
+    gap: 0.875rem;
+  }
+
+  .mega__column--primary .mega__link {
+    color: var(--mega-heading-color, var(--header-accent, var(--color-accent)));
+    font-size: var(--mega-heading-size, 0.8125rem);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .mega__column--primary .mega__link:hover {
+    color: var(--header-fg, var(--color-foreground));
+  }
+
+  /* ----- Promotional panel ----- */
+  .mega__promo {
+    position: relative;
+    display: flex;
+    align-items: var(--promo-valign, flex-end);
+    justify-content: var(--promo-justify, flex-start);
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--color-foreground);
+    color: #fff;
+  }
+
+  .mega__promo--empty {
+    background: var(--header-accent, var(--color-accent));
+  }
+
+  .mega__promo--contain {
+    background: var(--color-surface);
+    color: var(--color-foreground);
+  }
+
+  .mega__promo-image {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    object-fit: var(--promo-fit, cover);
+    object-position: var(--promo-position, 50% 50%);
+    transition: transform 700ms cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+
+  .mega__promo:hover .mega__promo-image {
+    transform: scale(1.03);
+  }
+
+  .mega__promo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgba(20, 12, 8, var(--promo-overlay, 0.25));
+  }
+
+  .mega__promo--contain::after {
+    display: none;
+  }
+
+  .mega__promo-content {
+    width: 100%;
+    max-width: 28rem;
+    padding: 2rem;
+    text-align: var(--promo-text-align, left);
+  }
+
+  .mega__promo-title {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-heading);
+    font-size: clamp(1.5rem, 1rem + 1.2vw, 2.125rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .mega__promo-text {
+    margin: 0 0 1rem;
+    font-size: 0.9375rem;
+    opacity: 0.92;
+  }
+
+  .mega__cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0.5rem 1.25rem;
+    border: 1px solid currentColor;
+    border-radius: var(--radius);
+    color: inherit;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background-color var(--transition), color var(--transition);
+  }
+
+  /* Whole promo is clickable */
+  .mega__cta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .mega__promo:hover .mega__cta,
+  .mega__cta:focus-visible {
+    background: #fff;
+    color: var(--color-foreground);
+  }
+
+  .mega__promo--contain:hover .mega__cta,
+  .mega__promo--contain .mega__cta:focus-visible {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
+
+  .mega__cta:focus-visible {
+    outline-color: currentColor;
+    outline-offset: 3px;
+  }
+}

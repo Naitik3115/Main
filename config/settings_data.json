@@ -1,0 +1,21 @@
+{
+  "current": {
+    "color_background": "#F6F3EE",
+    "color_surface": "#FBF9F5",
+    "color_text": "#2A1D15",
+    "color_text_muted": "#6F6358",
+    "color_border": "#D9D3CA",
+    "color_accent": "#8A6232",
+    "color_accent_text": "#FFFFFF",
+    "type_heading_font": "inter_n4",
+    "type_body_font": "inter_n4",
+    "type_base_size": 16,
+    "type_heading_scale": 100,
+    "page_width": 1400,
+    "section_spacing": 80,
+    "corner_radius": 2,
+    "color_header_background": "#F6F3EE",
+    "color_announcement_background": "#2A1D15",
+    "color_announcement_text": "#F6F1E8"
+  }
+}

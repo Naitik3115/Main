@@ -1,0 +1,127 @@
+{%- comment -%}
+  Renders one desktop mega menu panel from a "mega_menu" block of the header section.
+  Two layouts, chosen per block in the theme editor:
+  - multi:  full-width drawer, up to 3 link columns (only columns with a menu are rendered) + promo image
+  - single: compact panel anchored under the trigger, first configured column + promo image
+  The promo image can sit left or right and has width, height, fit, focal point, overlay and text alignment settings.
+  Accepts:
+  - block: a "mega_menu" block
+  Usage: {% render 'mega-menu', block: block %}
+{%- endcomment -%}
+{%- liquid
+  assign s = block.settings
+  assign layout = s.layout
+  assign has_promo = false
+  if s.promo_image != blank or s.promo_heading != blank
+    assign has_promo = true
+  endif
+  assign promo_alt = s.promo_image.alt | default: s.promo_heading | escape
+
+  assign promo_width = s.promo_width
+  if layout == 'single'
+    assign promo_width = s.promo_width_single
+  endif
+
+  assign columns_with_links = 0
+  assign first_column = 0
+  for i in (1..3)
+    assign menu_key = 'menu_' | append: i
+    assign col_menu = s[menu_key]
+    if col_menu != blank
+      if col_menu.links.size > 0
+        if columns_with_links == 0
+          assign first_column = i
+        endif
+        assign columns_with_links = columns_with_links | plus: 1
+      endif
+    endif
+  endfor
+
+  assign visible_columns = columns_with_links
+  if layout == 'single'
+    assign visible_columns = 1
+  endif
+
+  assign panel_vars = ''
+  if layout == 'single' and has_promo == false
+    assign panel_vars = '--single-width: 24rem; '
+  endif
+
+  capture promo_vars
+    render 'mega-promo-vars', s: s
+  endcapture
+-%}
+
+<div
+  class="mega__panel"
+  id="Mega-{{ block.id }}"
+  data-mega-panel
+  data-block-id="{{ block.id }}"
+  data-layout="{{ layout }}"
+  tabindex="-1"
+  style="--promo-w: {{ promo_width }}%; --promo-height: {{ s.promo_height }}px; --cols: {{ visible_columns }}; {{ panel_vars }}{{ promo_vars | strip }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="mega__layout mega__layout--{{ layout }}{% if s.promo_position == 'left' %} mega__layout--promo-left{% endif %}{% unless has_promo %} mega__layout--no-promo{% endunless %}">
+    <div class="mega__columns">
+      {%- for i in (1..3) -%}
+        {%- liquid
+          if layout == 'single' and i != first_column
+            continue
+          endif
+          assign heading_key = 'heading_' | append: i
+          assign menu_key = 'menu_' | append: i
+          assign col_heading = s[heading_key]
+          assign col_menu = s[menu_key]
+          assign col_has_links = false
+          if col_menu != blank
+            if col_menu.links.size > 0
+              assign col_has_links = true
+            endif
+          endif
+        -%}
+        {%- if col_has_links -%}
+          <div class="mega__column{% if col_heading == blank %} mega__column--primary{% endif %}">
+            {%- if col_heading != blank -%}
+              <p class="mega__heading">{{ col_heading | escape }}</p>
+            {%- endif -%}
+            <ul class="mega__list" role="list">
+              {%- for link in col_menu.links -%}
+                <li><a class="mega__link" href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title | escape }}</a></li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    {%- if has_promo -%}
+      <div class="mega__promo{% if s.promo_image == blank %} mega__promo--empty{% elsif s.promo_fit == 'contain' %} mega__promo--contain{% endif %}">
+        {%- if s.promo_image != blank -%}
+          {{
+            s.promo_image
+            | image_url: width: 1200
+            | image_tag:
+              loading: 'lazy',
+              fetchpriority: 'low',
+              class: 'mega__promo-image',
+              widths: '450, 600, 900, 1200',
+              sizes: '(min-width: 1100px) 40vw, 100vw',
+              alt: promo_alt
+          }}
+        {%- endif -%}
+        <div class="mega__promo-content">
+          {%- if s.promo_heading != blank -%}
+            <p class="mega__promo-title">{{ s.promo_heading | escape }}</p>
+          {%- endif -%}
+          {%- if s.promo_description != blank -%}
+            <p class="mega__promo-text">{{ s.promo_description | escape }}</p>
+          {%- endif -%}
+          {%- if s.promo_cta_label != blank and s.promo_cta_url != blank -%}
+            <a class="mega__cta" href="{{ s.promo_cta_url }}">{{ s.promo_cta_label | escape }}</a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</div>

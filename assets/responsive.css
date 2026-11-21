@@ -1,0 +1,70 @@
+/* NØRTH — responsive enhancements. Base styles are mobile-first; this file only adds from larger widths. */
+
+/* Tablet: 750px and up */
+@media (min-width: 750px) {
+  :root {
+    --page-gutter: 2rem;
+    --section-space: calc(var(--section-space-max) * 0.8);
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5) var(--space-4);
+  }
+
+  .hero__content {
+    padding-block: var(--space-6);
+  }
+
+  .cart-item {
+    grid-template-columns: 7rem 1fr auto auto;
+    align-items: start;
+  }
+
+  .cart-item__media {
+    grid-row: auto;
+  }
+
+  .cart-item__quantity,
+  .cart-item__total {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .cart-item__total {
+    min-width: 5rem;
+    text-align: right;
+  }
+
+  .footer__inner {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* Desktop: 990px and up */
+@media (min-width: 990px) {
+  :root {
+    --page-gutter: 3rem;
+    --section-space: var(--section-space-max);
+    --header-height: 4.5rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .product__grid {
+    grid-template-columns: 1.15fr 1fr;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  .product__info {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-4));
+  }
+
+  .hero--small { min-height: 45svh; }
+  .hero--medium { min-height: 65svh; }
+  .hero--large { min-height: 85svh; }
+}

@@ -1,0 +1,195 @@
+{%- if section.settings.enabled and section.blocks.size > 0 -%}
+  {%- assign multiple = false -%}
+  {%- if section.blocks.size > 1 -%}{%- assign multiple = true -%}{%- endif -%}
+
+  {% style %}
+    #shopify-section-{{ section.id }} {
+      --announcement-font-size: {{ section.settings.font_size_mobile }}px;
+      --announcement-padding-y: {{ section.settings.padding_y }}px;
+      {%- if section.settings.background_color != blank -%}
+        --announcement-bg: {{ section.settings.background_color }};
+      {%- endif -%}
+      {%- if section.settings.text_color != blank -%}
+        --announcement-fg: {{ section.settings.text_color }};
+      {%- endif -%}
+    }
+
+    @media (min-width: 1100px) {
+      #shopify-section-{{ section.id }} {
+        --announcement-font-size: {{ section.settings.font_size }}px;
+      }
+    }
+  {% endstyle %}
+
+  <div
+    class="announcement{% unless section.settings.show_on_desktop %} announcement--hide-desktop{% endunless %}{% unless section.settings.show_on_mobile %} announcement--hide-mobile{% endunless %}"
+    data-announcement
+    data-autoplay="{{ section.settings.autoplay }}"
+    data-speed="{{ section.settings.speed }}"
+    role="region"
+    aria-label="{{ 'accessibility.announcements' | t }}"
+  >
+    <div class="announcement__inner">
+      {%- if multiple and section.settings.show_arrows -%}
+        <button class="announcement__arrow" type="button" data-announcement-prev aria-label="{{ 'accessibility.previous_announcement' | t }}">
+          {% render 'icon', name: 'chevron-left' %}
+        </button>
+      {%- endif -%}
+
+      <div class="announcement__viewport">
+        {%- for block in section.blocks -%}
+          <div
+            class="announcement__slide{% if forloop.first %} is-active{% endif %}"
+            data-announcement-slide
+            data-block-id="{{ block.id }}"
+            aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}"
+            {{ block.shopify_attributes }}
+          >
+            {%- if block.settings.link != blank -%}
+              <a class="announcement__text" href="{{ block.settings.link }}">{{ block.settings.text | escape }}</a>
+            {%- else -%}
+              <p class="announcement__text">{{ block.settings.text | escape }}</p>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- if multiple and section.settings.show_arrows -%}
+        <button class="announcement__arrow" type="button" data-announcement-next aria-label="{{ 'accessibility.next_announcement' | t }}">
+          {% render 'icon', name: 'chevron-right' %}
+        </button>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "enabled_on": {
+    "groups": [
+      "header"
+    ]
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Visibility"
+    },
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Show announcement bar",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_on_desktop",
+      "label": "Show on desktop (1100px and up)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_on_mobile",
+      "label": "Show on mobile and tablet",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Typography and spacing"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "label": "Font size, desktop",
+      "min": 11,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "font_size_mobile",
+      "label": "Font size, mobile",
+      "min": 11,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "padding_y",
+      "label": "Vertical spacing",
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "info": "Leave empty to use the announcement color from Theme settings."
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "info": "Leave empty to use the announcement color from Theme settings."
+    },
+    {
+      "type": "header",
+      "content": "Rotation"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Rotate announcements automatically",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Change every",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "sec",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show previous and next arrows",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "announcement",
+      "name": "Announcement",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Welcome to our store"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link (optional)"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

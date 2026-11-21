@@ -1,0 +1,33 @@
+{%- paginate collection.products by 12 -%}
+  <section class="section container">
+    <header class="page-header">
+      <h1>{{ collection.title | escape }}</h1>
+      {%- if collection.description != blank -%}
+        <div class="rte">{{ collection.description }}</div>
+      {%- endif -%}
+    </header>
+
+    {%- if collection.products.size == 0 -%}
+      <p class="muted">{{ 'collection.empty' | t }}</p>
+    {%- else -%}
+      <ul class="grid" role="list">
+        {%- for product in collection.products -%}
+          <li>{% render 'product-card', product: product %}</li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if paginate.pages > 1 -%}
+        <nav class="pagination" aria-label="{{ 'accessibility.pagination' | t }}">
+          {{- paginate | default_pagination -}}
+        </nav>
+      {%- endif -%}
+    {%- endif -%}
+  </section>
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "Collection page",
+  "settings": []
+}
+{% endschema %}

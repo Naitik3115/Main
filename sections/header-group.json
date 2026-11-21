@@ -1,0 +1,35 @@
+{
+  "name": "Header group",
+  "type": "header",
+  "sections": {
+    "announcement": {
+      "type": "announcement-bar",
+      "blocks": {
+        "announcement-1": {
+          "type": "announcement",
+          "settings": {
+            "text": "Welcome to our store"
+          }
+        },
+        "announcement-2": {
+          "type": "announcement",
+          "settings": {
+            "text": "Explore the new arrivals"
+          }
+        }
+      },
+      "block_order": ["announcement-1", "announcement-2"],
+      "settings": {
+        "enabled": true,
+        "autoplay": true,
+        "speed": 5,
+        "show_arrows": true
+      }
+    },
+    "header": {
+      "type": "header",
+      "settings": {}
+    }
+  },
+  "order": ["announcement", "header"]
+}

@@ -1,0 +1,24 @@
+{%- comment -%}
+  A third-level mobile menu panel (the children of an item that sits inside a second-level panel).
+  Accepts:
+  - id: unique panel id, referenced by a [data-panel-open] button
+  - link: the parent link; its child links are listed
+  - eyebrow: optional label shown above the title (the second-level parent)
+  Usage: {% render 'mobile-panel', id: 'MobilePanel-2-1', link: child, eyebrow: parent.title %}
+{%- endcomment -%}
+{%- assign view_all_label = 'general.view_all' | t -%}
+<div class="mobile-panel" id="{{ id }}" data-mobile-panel role="group" aria-label="{{ link.title | escape }}">
+  {% render 'mobile-panel-head', title: link.title, eyebrow: eyebrow %}
+  <ul class="mobile-nav__list" role="list">
+    {% render 'mobile-nav-row', level: 'all', title: view_all_label, url: link.url, i: 0 %}
+    {%- for child in link.links -%}
+      {%- liquid
+        assign child_current = false
+        if child.current or child.active
+          assign child_current = true
+        endif
+      -%}
+      {% render 'mobile-nav-row', level: 'sub', title: child.title, url: child.url, i: forloop.index, current: child_current, exact: child.current %}
+    {%- endfor -%}
+  </ul>
+</div>
